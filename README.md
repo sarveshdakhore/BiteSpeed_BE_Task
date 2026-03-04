@@ -136,6 +136,7 @@ The `frontend/` app is a BiteSpeed-inspired test UI with:
 
 - Light-mode only layout
 - Country-code dropdown with flag + country name + dial code
+- Request mode switch: `Form Fields` or `Raw JSON Body` (JSON body only, no form-data)
 - Live request/response panel for `POST /identify`
 - Mermaid flowchart visualization with runtime path highlighting:
   - taken path highlighted in blue

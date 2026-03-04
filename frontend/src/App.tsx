@@ -30,6 +30,7 @@ interface IdentifyTrace {
 }
 
 type TraceStatus = 'idle' | 'available' | 'missing' | 'invalid';
+type RequestMode = 'form' | 'json';
 
 interface SecondaryContactDetail {
   id: number;
@@ -62,6 +63,11 @@ const navItems = [
   { label: 'Notes', href: '#notes' },
   { label: 'Test Cases', href: '#testcases' },
 ];
+
+const defaultRawJsonBody = `{
+  "email": "jane@brand.com",
+  "phoneNumber": "+919876543210"
+}`;
 
 const flowTestCases: FlowTestCase[] = [
   {
@@ -287,11 +293,13 @@ function buildFlowchart(trace: IdentifyTrace | null): string {
 export default function App(): React.JSX.Element {
   const defaultApiBaseUrl =
     import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.PROD ? 'https://bitespeed-be.sarveshdakhore.in' : 'http://localhost:3000');
+    (import.meta.env.PROD ? 'https://bitespeed-be.nexmun.in' : 'http://localhost:3000');
   const [apiBaseUrl, setApiBaseUrl] = useState(defaultApiBaseUrl);
+  const [requestMode, setRequestMode] = useState<RequestMode>('form');
   const [email, setEmail] = useState('');
   const [countryCode, setCountryCode] = useState(countryCodes[0]?.code ?? 'IN');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [rawJsonBody, setRawJsonBody] = useState(defaultRawJsonBody);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<IdentifyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -310,29 +318,53 @@ export default function App(): React.JSX.Element {
 
   const flowchart = useMemo(() => buildFlowchart(trace), [trace]);
   const runtimeHumanFlow = useMemo(() => (trace ? toHumanReadableFlow(trace.edgePath) : []), [trace]);
-  const isSubmitDisabled = loading || (!email.trim() && !phoneNumber.trim());
+  const isSubmitDisabled = loading || (requestMode === 'form' ? !email.trim() && !phoneNumber.trim() : !rawJsonBody.trim());
 
   const submitIdentify = async (): Promise<void> => {
-    if (!selectedCountry) {
-      return;
-    }
+    let payload: { email?: string | null; phoneNumber?: string | number | null };
 
-    const payload: { email?: string | null; phoneNumber?: string | number | null } = {};
-    if (email.trim()) {
-      payload.email = email.trim();
-    }
+    if (requestMode === 'json') {
+      try {
+        const parsed = JSON.parse(rawJsonBody) as unknown;
 
-    const preparedPhone = toRequestPhone(selectedCountry, phoneNumber);
-    if (preparedPhone) {
-      payload.phoneNumber = preparedPhone;
-    }
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          setError('JSON body must be a valid JSON object.');
+          setResult(null);
+          setTrace(null);
+          setTraceStatus('idle');
+          return;
+        }
 
-    if (!payload.email && !payload.phoneNumber) {
-      setError('Provide at least one non-empty email or phone number.');
-      setResult(null);
-      setTrace(null);
-      setTraceStatus('idle');
-      return;
+        payload = parsed as { email?: string | null; phoneNumber?: string | number | null };
+      } catch (_error) {
+        setError('Invalid JSON body. Please fix JSON syntax and try again.');
+        setResult(null);
+        setTrace(null);
+        setTraceStatus('idle');
+        return;
+      }
+    } else {
+      if (!selectedCountry) {
+        return;
+      }
+
+      payload = {};
+      if (email.trim()) {
+        payload.email = email.trim();
+      }
+
+      const preparedPhone = toRequestPhone(selectedCountry, phoneNumber);
+      if (preparedPhone) {
+        payload.phoneNumber = preparedPhone;
+      }
+
+      if (!payload.email && !payload.phoneNumber) {
+        setError('Provide at least one non-empty email or phone number.');
+        setResult(null);
+        setTrace(null);
+        setTraceStatus('idle');
+        return;
+      }
     }
 
     setLoading(true);
@@ -502,43 +534,79 @@ export default function App(): React.JSX.Element {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email (optional)</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="jane@brand.com"
-                  />
+                  <Label>Request Body Mode</Label>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Button
+                      type="button"
+                      variant={requestMode === 'form' ? 'default' : 'outline'}
+                      onClick={() => setRequestMode('form')}
+                    >
+                      Form Fields
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={requestMode === 'json' ? 'default' : 'outline'}
+                      onClick={() => setRequestMode('json')}
+                    >
+                      Raw JSON Body
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">This playground always sends JSON body (never form-data).</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Phone Number (optional)</Label>
-                  <div className="grid gap-2 sm:grid-cols-[220px_1fr]">
-                    <Select value={countryCode} onValueChange={setCountryCode}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Country code" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countryCodes.map((country) => (
-                          <SelectItem key={`${country.code}-${country.dialCode}`} value={country.code}>
-                            <span className="flex items-center gap-2">
-                              <span>{country.flag}</span>
-                              <span>{country.name}</span>
-                              <span className="text-muted-foreground">{country.dialCode}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {requestMode === 'form' ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email (optional)</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="jane@brand.com"
+                      />
+                    </div>
 
-                    <Input
-                      value={phoneNumber}
-                      onChange={(event) => setPhoneNumber(event.target.value)}
-                      placeholder="9876543210"
+                    <div className="space-y-2">
+                      <Label>Phone Number (optional)</Label>
+                      <div className="grid gap-2 sm:grid-cols-[220px_1fr]">
+                        <Select value={countryCode} onValueChange={setCountryCode}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Country code" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {countryCodes.map((country) => (
+                              <SelectItem key={`${country.code}-${country.dialCode}`} value={country.code}>
+                                <span className="flex items-center gap-2">
+                                  <span>{country.flag}</span>
+                                  <span>{country.name}</span>
+                                  <span className="text-muted-foreground">{country.dialCode}</span>
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Input
+                          value={phoneNumber}
+                          onChange={(event) => setPhoneNumber(event.target.value)}
+                          placeholder="9876543210"
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="raw-json-body">Raw JSON Body</Label>
+                    <textarea
+                      id="raw-json-body"
+                      value={rawJsonBody}
+                      onChange={(event) => setRawJsonBody(event.target.value)}
+                      className="min-h-44 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      placeholder='{"email":"jane@brand.com","phoneNumber":"+919876543210"}'
                     />
                   </div>
-                </div>
+                )}
 
                 <Button className="w-full" size="lg" disabled={isSubmitDisabled} onClick={() => void submitIdentify()}>
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Server className="mr-2 h-4 w-4" />}
