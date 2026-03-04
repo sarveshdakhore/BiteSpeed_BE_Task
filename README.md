@@ -5,9 +5,9 @@ Includes a modern **React + TypeScript** frontend playground for testing and vis
 
 ## Live URLs
 
-- Frontend: `https://bitespeed.sarveshdakhore.in`
-- Backend: `https://bitespeed-be.nexmun.in`
-- Identify endpoint: `https://bitespeed-be.nexmun.in/identify`
+- Frontend: [https://bitespeed.sarveshdakhore.in](https://bitespeed.sarveshdakhore.in)
+- Backend: [https://bitespeed-be.nexmun.in](https://bitespeed-be.nexmun.in)
+- Identify endpoint: [https://bitespeed-be.nexmun.in/identify](https://bitespeed-be.nexmun.in/identify)
 
 ## Live Contract
 
