@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: .
+      target: prod
+    container_name: bitespeed-app-prod
+    env_file:
+      - .env.production.example
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/bitespeed?schema=public
+    ports:
+      - '8009:8009'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: bitespeed-db-prod
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bitespeed
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d bitespeed']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - bitespeed_prod_db_data:/var/lib/postgresql/data
+
+volumes:
+  bitespeed_prod_db_data:

@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 220 35% 96%;
+  --foreground: 229 28% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 229 28% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 229 28% 13%;
+  --primary: 214 96% 57%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 225 20% 92%;
+  --secondary-foreground: 229 28% 13%;
+  --muted: 225 24% 92%;
+  --muted-foreground: 224 16% 42%;
+  --accent: 214 100% 96%;
+  --accent-foreground: 214 72% 34%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 224 25% 83%;
+  --input: 224 25% 83%;
+  --ring: 214 96% 57%;
+  --radius: 0.9rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 12% -10%, hsl(var(--primary) / 0.24), transparent 32%),
+      radial-gradient(circle at 88% 10%, hsl(190 80% 48% / 0.16), transparent 30%),
+      radial-gradient(circle at 50% 120%, hsl(230 90% 50% / 0.1), transparent 35%);
+  }
+}
+
+.bitespeed-grid {
+  background-size: 22px 22px;
+  background-image: theme('backgroundImage.bitespeed-grid');
+}
