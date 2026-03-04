@@ -15,7 +15,7 @@ services:
       - key: LOG_LEVEL
         value: info
       - key: CORS_ORIGIN
-        value: https://bitespeed.sarveshdakhore.in
+        value: "*"
       - key: RATE_LIMIT_WINDOW_MS
         value: 60000
       - key: RATE_LIMIT_MAX

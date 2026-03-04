@@ -221,6 +221,25 @@ function toRequestPhone(country: CountryCode, localPhone: string): string | unde
   return `${country.dialCode}${cleaned}`;
 }
 
+function normalizeEmptyStringsToNull(payload: Record<string, unknown>): Record<string, unknown> {
+  const normalized = { ...payload };
+  const keys: Array<'email' | 'phoneNumber'> = ['email', 'phoneNumber'];
+
+  for (const key of keys) {
+    if (!(key in normalized)) {
+      continue;
+    }
+
+    const value = normalized[key];
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      normalized[key] = trimmed.length === 0 ? null : trimmed;
+    }
+  }
+
+  return normalized;
+}
+
 function isIdentifyTrace(value: unknown): value is IdentifyTrace {
   if (!value || typeof value !== 'object') {
     return false;
@@ -295,7 +314,7 @@ export default function App(): React.JSX.Element {
     import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.PROD ? 'https://bitespeed-be.nexmun.in' : 'http://localhost:3000');
   const [apiBaseUrl, setApiBaseUrl] = useState(defaultApiBaseUrl);
-  const [requestMode, setRequestMode] = useState<RequestMode>('form');
+  const [requestMode, setRequestMode] = useState<RequestMode>('json');
   const [email, setEmail] = useState('');
   const [countryCode, setCountryCode] = useState(countryCodes[0]?.code ?? 'IN');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -321,7 +340,7 @@ export default function App(): React.JSX.Element {
   const isSubmitDisabled = loading || (requestMode === 'form' ? !email.trim() && !phoneNumber.trim() : !rawJsonBody.trim());
 
   const submitIdentify = async (): Promise<void> => {
-    let payload: { email?: string | null; phoneNumber?: string | number | null };
+    let payload: Record<string, unknown>;
 
     if (requestMode === 'json') {
       try {
@@ -335,7 +354,7 @@ export default function App(): React.JSX.Element {
           return;
         }
 
-        payload = parsed as { email?: string | null; phoneNumber?: string | number | null };
+        payload = parsed as Record<string, unknown>;
       } catch (_error) {
         setError('Invalid JSON body. Please fix JSON syntax and try again.');
         setResult(null);
@@ -348,17 +367,13 @@ export default function App(): React.JSX.Element {
         return;
       }
 
-      payload = {};
-      if (email.trim()) {
-        payload.email = email.trim();
-      }
+      payload = { email };
 
       const preparedPhone = toRequestPhone(selectedCountry, phoneNumber);
-      if (preparedPhone) {
-        payload.phoneNumber = preparedPhone;
-      }
+      payload.phoneNumber = preparedPhone ?? '';
 
-      if (!payload.email && !payload.phoneNumber) {
+      const normalizedFormPayload = normalizeEmptyStringsToNull(payload);
+      if (normalizedFormPayload.email === null && normalizedFormPayload.phoneNumber === null) {
         setError('Provide at least one non-empty email or phone number.');
         setResult(null);
         setTrace(null);
@@ -366,6 +381,8 @@ export default function App(): React.JSX.Element {
         return;
       }
     }
+
+    payload = normalizeEmptyStringsToNull(payload);
 
     setLoading(true);
     setError(null);

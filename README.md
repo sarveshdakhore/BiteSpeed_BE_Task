@@ -6,8 +6,8 @@ Includes a modern **React + TypeScript** frontend playground for testing and vis
 ## Live URLs
 
 - Frontend: `https://bitespeed.sarveshdakhore.in`
-- Backend: `https://bitespeed-be.sarveshdakhore.in`
-- Identify endpoint: `https://bitespeed-be.sarveshdakhore.in/identify`
+- Backend: `https://bitespeed-be.nexmun.in`
+- Identify endpoint: `https://bitespeed-be.nexmun.in/identify`
 
 ## Live Contract
 
@@ -44,10 +44,10 @@ Returns:
 }
 ```
 
-### Optional Trace Header (Dev/Test)
+### Optional Trace Header
 
 - Send `POST /identify?trace=true` to request execution tracing.
-- In non-production environments, backend responds with `x-identify-trace` header (base64url JSON).
+- Backend responds with `x-identify-trace` header (base64url JSON) when trace is requested.
 - Response body contract stays unchanged.
 
 ## Core Reconciliation Behavior
@@ -156,7 +156,7 @@ Backend CORS should include `http://localhost:3008` (already reflected in `.env.
 By default, frontend API base URL resolves as:
 
 - Development: `http://localhost:3000`
-- Production: `https://bitespeed-be.sarveshdakhore.in`
+- Production: `https://bitespeed-be.nexmun.in`
 
 You can override either using `VITE_API_BASE_URL`.
 
@@ -207,7 +207,7 @@ Expected production envs:
 - `NODE_ENV=production`
 - `DATABASE_URL=<render postgres connection string>`
 - `PORT=8009`
-- `CORS_ORIGIN=https://bitespeed.sarveshdakhore.in`
+- `CORS_ORIGIN=*`
 
 Health check path: `/health/ready`
 

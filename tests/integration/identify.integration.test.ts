@@ -215,7 +215,7 @@ describeIntegration('POST /identify integration', () => {
     }
   });
 
-  it('does not return trace header for trace=true in production app env', async () => {
+  it('returns trace header for trace=true in production app env', async () => {
     const previous = env.APP_ENV;
     env.APP_ENV = 'production';
 
@@ -225,7 +225,8 @@ describeIntegration('POST /identify integration', () => {
         .send({ email: 'prod-trace@example.com', phoneNumber: '9990002222' })
         .expect(200);
 
-      expect(response.header['x-identify-trace']).toBeUndefined();
+      const traceHeader = response.header['x-identify-trace'] as string | undefined;
+      expect(typeof traceHeader).toBe('string');
     } finally {
       env.APP_ENV = previous;
     }

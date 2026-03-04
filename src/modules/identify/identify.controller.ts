@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 
-import { env } from '../../config/env';
 import { HttpError } from '../../lib/httpError';
 import type { IdentifyInput } from './identify.types';
 import type { ContactService } from './identify.service';
@@ -56,7 +55,7 @@ export function createIdentifyController(contactService: ContactService) {
       }
 
       const payload: IdentifyInput = parsedPayload.data;
-      const shouldTrace = req.query.trace === 'true' && env.APP_ENV !== 'production';
+      const shouldTrace = req.query.trace === 'true';
       let result;
 
       if (shouldTrace) {
