@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, GitMerge, Loader2, PhoneCall, Server } from 'lucide-react';
+import { CheckCircle2, Github, GitMerge, Loader2, PhoneCall, Server } from 'lucide-react';
 
 import { MermaidDiagram } from './components/mermaid-diagram';
 import { Badge } from './components/ui/badge';
@@ -448,9 +448,15 @@ export default function App(): React.JSX.Element {
             ))}
           </nav>
 
-          <Badge variant="outline" className="hidden sm:inline-flex">
-            React + TS
-          </Badge>
+          <a
+            href="https://github.com/sarveshdakhore/BiteSpeed_BE_Task"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition hover:bg-accent hover:text-accent-foreground"
+          >
+            <Github className="h-4 w-4" />
+            Github Repo
+          </a>
         </div>
 
         <nav className="mx-auto flex w-full max-w-7xl items-center gap-2 overflow-x-auto px-4 pb-3 lg:hidden md:px-10">
@@ -722,6 +728,10 @@ export default function App(): React.JSX.Element {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-foreground">
+                Disclaimer: These cases may already be tested in database. Change email/phone values to
+                observe each flow path clearly.
+              </div>
               {flowTestCases.map((testCase) => (
                 <div key={testCase.title} className="rounded-lg border border-border/70 bg-background/70 p-4">
                   <p className="font-semibold">{testCase.title}</p>
